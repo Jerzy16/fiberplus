@@ -14,6 +14,7 @@
 var HomePage = (function () {
   var previewHls = null;
   var previewUrl = null;
+  var previewGeneration = 0;
 
   async function render(providerId) {
     var provider = Providers.getById(providerId);
@@ -139,6 +140,33 @@ var HomePage = (function () {
 
     previewUrl = channel.url;
     var url = channel.url;
+    var generation = ++previewGeneration;
+
+    if (
+      !VideoEngine.isWebOS() &&
+      window.__IPTV_TRANSCODER_URL__ &&
+      /^https?:\/\//i.test(url)
+    ) {
+      fetch(window.__IPTV_TRANSCODER_URL__ + encodeURIComponent(url))
+        .then(function (response) {
+          if (!response.ok) throw new Error('Transcoder HTTP ' + response.status);
+          return response.json();
+        })
+        .then(function (data) {
+          if (generation !== previewGeneration || !data || !data.url) return;
+          attachPreview(data.url, video, generation);
+        })
+        .catch(function () {
+          if (generation === previewGeneration) destroyPreview();
+        });
+      return;
+    }
+
+    attachPreview(url, video, generation);
+  }
+
+  function attachPreview(url, video, generation) {
+    if (generation !== previewGeneration || !video) return;
 
     // Same native-vs-hls.js decision as VideoEngine: on LG webOS (and Safari)
     // the native player decodes the full codec set, so the preview must not be
@@ -146,14 +174,21 @@ var HomePage = (function () {
     // background on the TV. hls.js stays the desktop-browser fallback.
     var preferNative =
       VideoEngine.isWebOS() ||
+      (!window.Hls || !Hls.isSupported()) &&
       (video.canPlayType && video.canPlayType('application/vnd.apple.mpegurl'));
+
+    if (!preferNative && !/^https?:\/\//i.test(url) && url.indexOf('/') !== 0) {
+      destroyPreview();
+      return;
+    }
 
     var finalUrl = (
       typeof window !== 'undefined' &&
-      window.__IPTV_PROXY_URL__
+      window.__IPTV_PROXY_URL__ &&
+      /^https?:\/\//i.test(url)
     ) ? (window.__IPTV_PROXY_URL__ + encodeURIComponent(url)) : url;
 
-    if (url.indexOf('.m3u8') !== -1 && !preferNative && window.Hls && Hls.isSupported()) {
+    if (/\.m3u8(?:$|[?#])/i.test(url) && !preferNative && window.Hls && Hls.isSupported()) {
       previewHls = new Hls({
         enableWorker: true,
         lowLatencyMode: false,
@@ -174,6 +209,7 @@ var HomePage = (function () {
   }
 
   function destroyPreview() {
+    previewGeneration++;
     if (previewHls) {
       previewHls.destroy();
       previewHls = null;

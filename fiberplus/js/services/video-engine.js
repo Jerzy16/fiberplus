@@ -47,25 +47,75 @@ var VideoEngine = (function () {
     if (
       typeof window !== 'undefined' &&
       window.location &&
-      window.__IPTV_PROXY_URL__
+      window.__IPTV_PROXY_URL__ &&
+      /^https?:\/\//i.test(url)
     ) {
       return window.__IPTV_PROXY_URL__ + encodeURIComponent(url);
     }
     return url;
   }
 
-  function load(url, fallbackUrl) {
+  function isHlsUrl(url) {
+    return /\.m3u8(?:$|[?#])/i.test(String(url || ''));
+  }
+
+  function isRemoteMediaUrl(url) {
+    return /^https?:\/\//i.test(String(url || ''));
+  }
+
+  function requestTranscodedSource(url, done) {
+    if (
+      typeof window === 'undefined' ||
+      !window.__IPTV_TRANSCODER_URL__ ||
+      !/^https?:\/\//i.test(url)
+    ) {
+      done(null);
+      return;
+    }
+
+    fetch(window.__IPTV_TRANSCODER_URL__ + encodeURIComponent(url))
+      .then(function (response) {
+        if (!response.ok) throw new Error('Transcoder HTTP ' + response.status);
+        return response.json();
+      })
+      .then(function (data) {
+        done(data && data.url ? data.url : null);
+      })
+      .catch(function (error) {
+        console.warn('[VideoEngine] No se pudo iniciar la transcodificacion:', error);
+        done(null);
+      });
+  }
+
+  function load(url, fallbackUrl, options) {
     if (!videoElement) {
       console.error('VideoEngine not initialized');
       return;
     }
 
     destroy(true);
+    options = options || {};
     var generation = loadGeneration;
     var fallbackTried = false;
     var serverRetryCount = 0;
     var mediaRecoveryCount = 0;
-    var hlsRecreated = false;
+    var hlsRecreated = !!options.recreated;
+    var transcodeTried = !!options.transcoded;
+
+    function tryTranscodedSource(reason) {
+      if (transcodeTried || generation !== loadGeneration) return false;
+      transcodeTried = true;
+      console.warn('[VideoEngine] Solicitando video H.264/AAC compatible:', reason);
+      requestTranscodedSource(url, function (transcodedUrl) {
+        if (generation !== loadGeneration) return;
+        if (!transcodedUrl) {
+          emitError('El navegador no pudo obtener una salida de video compatible del servidor.');
+          return;
+        }
+        load(transcodedUrl, null, { transcoded: true });
+      });
+      return true;
+    }
 
     function tryFallback(reason) {
       if (
@@ -82,14 +132,26 @@ var VideoEngine = (function () {
       return true;
     }
 
+    // Desktop browsers do not share the codec support of the TV player.
+    // Normalize every live channel once, before HLS.js sees it, so a source
+    // with HEVC/MPEG-2/AC-3 cannot partially decode as audio-only or video-only.
+    if (
+      !isWebOS() &&
+      isRemoteMediaUrl(url) &&
+      window.__IPTV_TRANSCODER_URL__ &&
+      !options.transcoded
+    ) {
+      if (tryTranscodedSource('compatibilidad de navegador')) return;
+    }
+
     videoElement.onerror = function () {
-      if (!tryFallback('fallo del reproductor nativo')) {
+      if (!tryFallback('fallo del reproductor nativo') && !tryTranscodedSource('fallo del reproductor nativo')) {
         emitError('Este canal no se puede reproducir en este dispositivo.');
       }
     };
 
     var finalUrl = getRequestUrl(url);
-    var isHls = url.indexOf('.m3u8') !== -1;
+    var isHls = isHlsUrl(url);
     // Chromium can use HLS.js for HLS, but it cannot decode every audio
     // codec commonly emitted by XtreamUI (notably MP2 and AC-3). MPEG-TS is
     // not a browser fallback there, so do not switch formats and hide the
@@ -101,15 +163,15 @@ var VideoEngine = (function () {
         enableWorker: true,
         lowLatencyMode: false,
         backBufferLength: 30,
-        maxBufferLength: 30,
-        maxMaxBufferLength: 60,
-        maxBufferSize: 60 * 1000 * 1000,
-        maxBufferHole: 0.5,
+        maxBufferLength: 24,
+        maxMaxBufferLength: 40,
+        maxBufferSize: 40 * 1000 * 1000,
+        maxBufferHole: 0.2,
         highBufferWatchdogPeriod: 2,
         nudgeOffset: 0.2,
         nudgeMaxRetry: 5,
-        liveSyncDurationCount: 3,
-        liveMaxLatencyDurationCount: 10,
+        liveSyncDurationCount: 4,
+        liveMaxLatencyDurationCount: 8,
         manifestLoadingTimeOut: 10000,
         manifestLoadingMaxRetry: 3,
         levelLoadingTimeOut: 10000,
@@ -137,12 +199,15 @@ var VideoEngine = (function () {
           audio && audio.indexOf('mp4a') !== 0 && audio.indexOf('aac') !== 0;
         var unsupportedVideo =
           video && video.indexOf('avc') !== 0 && video.indexOf('h264') !== 0;
-       console.log('[VideoEngine] CÓDECS DETECTADOS POR HLS.JS:', {
-  video: video,
-  audio: audio,
-  videoCompatible: !unsupportedVideo,
-  audioCompatible: !unsupportedAudio
-});
+        console.log('[VideoEngine] Códecs detectados por HLS.js:', {
+          video: video,
+          audio: audio,
+          videoCompatible: !unsupportedVideo,
+          audioCompatible: !unsupportedAudio
+        });
+        if (unsupportedVideo || unsupportedAudio) {
+          tryTranscodedSource('codec no compatible (' + (video || 'video') + '/' + (audio || 'audio') + ')');
+        }
       });
 
       hlsInstance.on(Hls.Events.ERROR, function (event, data) {
@@ -153,6 +218,8 @@ var VideoEngine = (function () {
             networkRetryCount++;
             if (data.response && data.response.code === 403) {
               if (canUseNativeFallback && tryFallback('el servidor rechazo la salida HLS (403)')) {
+                break;
+              } else if (tryTranscodedSource('el navegador recibio 403 en un segmento HLS')) {
                 break;
               } else if (serverRetryCount < 1) {
                 serverRetryCount++;
@@ -170,11 +237,13 @@ var VideoEngine = (function () {
                 );
               }
             } else if (data.response && data.response.code === 404) {
-              emitError('Este canal ya no existe en el servidor (404).');
+              if (!tryTranscodedSource('segmento HLS no disponible')) {
+                emitError('El canal no pudo entregar uno de sus segmentos de video.');
+              }
             } else if (networkRetryCount <= 1) {
               console.warn('[VideoEngine] Reintentando carga de red (' + networkRetryCount + '/2)...');
               hlsInstance.startLoad();
-            } else {
+            } else if (!tryTranscodedSource('fallos repetidos de red HLS')) {
               var msg = 'Canal no disponible temporalmente en el servidor.';
               emitError(msg);
             }
@@ -195,12 +264,15 @@ var VideoEngine = (function () {
               serverRetryTimer = setTimeout(function () {
                 serverRetryTimer = null;
                 if (generation !== loadGeneration) return;
-                load(url, fallbackUrl);
+                load(url, fallbackUrl, {
+                  transcoded: transcodeTried,
+                  recreated: true
+                });
               }, 700);
-            } else {
+            } else if (!tryTranscodedSource('error de decodificacion de medios')) {
               emitError(
                 'No se pudo reconstruir el buffer HLS de este canal. ' +
-                'El servidor puede estar entregando segmentos dañados o incompletos.'
+                'El servidor puede estar entregando un codec no compatible o segmentos dañados.'
               );
             }
             break;
@@ -219,13 +291,15 @@ var VideoEngine = (function () {
               serverRetryTimer = setTimeout(function () {
                 serverRetryTimer = null;
                 if (generation !== loadGeneration) return;
-                load(url, fallbackUrl);
+                load(url, fallbackUrl, {
+                  transcoded: transcodeTried,
+                  recreated: true
+                });
               }, 700);
-            } else {
+            } else if (!tryTranscodedSource('error HLS no recuperable')) {
               destroy(true);
               emitError(
-                'El canal no pudo iniciar en Chrome/Edge. ' +
-                'Revisa el manifiesto HLS y los segmentos del servidor.'
+                'El canal no pudo iniciar. El navegador necesita H.264/AAC y el servidor no pudo generar una salida compatible.'
               );
             }
             break;

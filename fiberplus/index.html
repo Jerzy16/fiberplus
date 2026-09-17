@@ -19,6 +19,13 @@
 
   <script src="js/vendor/hls.min.js"></script>
 
+  <script>
+    if (window.location.protocol === 'http:' || window.location.protocol === 'https:') {
+      window.__IPTV_PROXY_URL__ = '/api/proxy?url=';
+      window.__IPTV_TRANSCODER_URL__ = '/api/transcode?url=';
+    }
+  </script>
+
   <script src="js/core/utils.js"></script>
   <script src="js/core/store.js"></script>
   <script src="js/core/router.js"></script>
