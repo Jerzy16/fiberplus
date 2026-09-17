@@ -1,0 +1,92 @@
+:root {
+  /* ===== Brand palette =====
+   * The five solids plus the two translucent veils are the whole design.
+   * Alpha values are written as rgba() rather than the 8-digit hex form the
+   * design uses (#18212E70 / #ffffff70): 8-digit hex needs Chromium 62 and
+   * the webOS builds LG ships on older sets drop the declaration entirely,
+   * which would leave a card with no background at all. 0x70 = 112/255. */
+  --color-black: #0d0d0d;
+  --color-navy: #18212e;
+  --color-slate: #344459;
+  --color-silver: #d9d9d9;
+  --color-white: #ffffff;
+
+  --color-navy-veil: rgba(24, 33, 46, 0.44);
+  --color-white-veil: rgba(255, 255, 255, 0.44);
+
+  /* Semantic aliases — components only ever read these, so a palette change
+   * is one edit here rather than a sweep through every rule. */
+  --color-bg: var(--color-black);
+  --color-surface: var(--color-navy);
+  --color-input: var(--color-black);
+  --color-action: var(--color-slate);
+
+  --color-text: var(--color-white);
+  --color-text-muted: var(--color-silver);
+  --color-text-dim: var(--color-white-veil);
+  --color-border: var(--color-white-veil);
+  --color-danger: #e5484d;
+
+  /* The ambient backdrop shared by every non-video screen (splash, provider
+   * picker, login): near-black overall, lifted towards the navy in the top
+   * corners so the flat panel reads as depth rather than as a black void. */
+  --app-backdrop:
+    radial-gradient(70% 60% at 100% 0%, rgba(52, 68, 89, 0.55) 0%, rgba(52, 68, 89, 0) 70%),
+    radial-gradient(60% 55% at 0% 0%, rgba(24, 33, 46, 0.9) 0%, rgba(24, 33, 46, 0) 70%),
+    linear-gradient(160deg, #18212e 0%, #0d0d0d 55%, #0d0d0d 100%);
+
+  /* Radii */
+  --radius-sm: 0.55rem;
+  --radius-md: 0.9rem;
+  --radius-lg: 1.5rem;
+  --radius-pill: 999px;
+
+  /* ===== Adaptive layout tokens =====
+   * Every page reads its rhythm from these instead of hard-coding paddings,
+   * heights or tile sizes. css/responsive.css is the single place that
+   * re-points them per screen shape, so a layout change for a new panel size
+   * never means touching the component rules.
+   *
+   * The values below are the reference design (a 16:9 panel in landscape).
+   *
+   * `--gutter-x` doubles as the TV title-safe margin: TV panels overscan the
+   * outer few percent of the picture, so nothing meaningful may touch the
+   * physical edge. Expressed in rem, it tracks the root size, which itself
+   * tracks the panel — the safe area stays proportional at 720p or 4K. */
+  --gutter-x: 2.4rem;
+  --gutter-y: 1.6rem;
+
+  /* Full space between two tiles. Tracks apply half of it as a negative
+   * margin and each tile the other half (flex `gap` is unusable here — see
+   * the note in components.css). */
+  --tile-gap: 1rem;
+
+  /* Vertical rhythm between the blocks of a page. */
+  --section-gap: 2rem;
+
+  /* Provider circles are a fixed-size, centred pair rather than a grid:
+   * there are only ever a handful of them and the design wants them large.
+   * The width doubles as the circle's diameter. */
+  --provider-tile-width: 11rem;
+  --provider-gap: 3rem;
+
+  /* Width of a channel tile inside a horizontally scrolled rail. */
+  --rail-tile-width: 9.5rem;
+  /* Height of the logo band inside a channel tile. */
+  --rail-logo-height: 3.2rem;
+
+  /* Height of the decorative gradient fade above the player controls. */
+  --player-overlay-fade: 4rem;
+
+  /* Typography */
+  --font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+
+  /* Motion */
+  --transition-fast: 0.15s ease;
+  --transition-normal: 0.25s ease;
+
+  /* Focus accent for TV remote navigation. The cursor is primarily shown as
+   * a solid white fill (see .focused in components.css); this soft halo just
+   * lifts it off dark artwork on the video-backed screens. */
+  --focus-ring: 0 0 0 0.15rem rgba(255, 255, 255, 0.55);
+}

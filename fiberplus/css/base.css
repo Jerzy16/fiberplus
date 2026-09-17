@@ -1,0 +1,139 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+/* ===== TV-scale root sizing =====
+ * Everything in the app is sized in rem/em, so scaling the root font-size
+ * here scales the whole UI at once. webOS (and other smart-TV browsers)
+ * report a virtual viewport rather than the panel's native pixels — older
+ * sets report ~1280px, most current ones ~1920px, some newer profiles pass
+ * through native 2560/3840.
+ *
+ * The reference design is 1920x1080 with a 26px root.
+ *
+ * Scaling off the width alone (1.3542vw) keeps the proportions only while
+ * the viewport stays 16:9. The moment it does not — a 21:9 or 32:9 panel, a
+ * TV whose browser reports a letterboxed viewport, a desktop window that is
+ * wide but short, a phone in portrait — the width no longer says anything
+ * about how much *vertical* room there is, so the interface was rendered far
+ * too large for the height available and everything below the fold (hero
+ * text, the first row of tiles, the login card) was cut off.
+ *
+ * So the root size follows whichever dimension is the binding constraint:
+ *
+ *   - viewport narrower than 16:9  -> width is the limit  -> 1.3542vw
+ *   - viewport wider  than 16:9    -> height is the limit -> 2.4074vh
+ *
+ * Both expressions evaluate to 26px on a 1920x1080 panel, so they meet
+ * exactly at the crossover and the scale is continuous — there is no step at
+ * the breakpoint, only a change in which axis drives it. That is the same
+ * "fit the 16:9 design into whatever box exists" behaviour YouTube TV has:
+ * the layout never changes shape, it just occupies the largest 16:9-ish area
+ * the panel can give it.
+ *
+ * Deliberately expressed as an aspect-ratio media query rather than
+ * `min(1.3542vw, 2.4074vh)`: `min()` needs Chromium 79 and the webOS builds
+ * LG ships on pre-2021 sets are older than that, where the whole declaration
+ * would be dropped. Aspect-ratio queries work on every engine in the field
+ * and compute the identical value. The px line stays as the last-resort
+ * fallback for an engine that ignores viewport units entirely. */
+html {
+  font-size: 26px;
+  font-size: 1.3542vw;
+}
+
+@media (min-aspect-ratio: 16/9) {
+  html {
+    font-size: 2.4074vh;
+  }
+}
+
+/* Legibility floor. Under roughly a 1100px-wide or 620px-tall viewport (a
+ * desktop window used for development, a phone, a TV browser reporting a
+ * small virtual viewport) the proportional value drops below what is
+ * readable, so pin a minimum and let the layout re-flow via the breakpoints
+ * in responsive.css instead of shrinking further. */
+@media (max-width: 1100px), (max-height: 620px) {
+  html {
+    font-size: 15px;
+  }
+}
+
+@media (max-width: 700px), (max-height: 420px) {
+  html {
+    font-size: 13px;
+  }
+}
+
+html,
+body {
+  height: 100%;
+  background-color: var(--color-bg);
+  color: var(--color-text);
+  font-family: var(--font-family);
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+
+/* The ambient gradient lives on <body> so it is painted once for the whole
+ * app; the video-backed screens (home stage, player) simply cover it with
+ * their own opaque black shell. */
+body {
+  background-image: var(--app-backdrop);
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+}
+
+button,
+input {
+  font-family: inherit;
+}
+
+button {
+  border: none;
+  cursor: pointer;
+  background: none;
+  color: inherit;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+/* `height: 100%` off <body> rather than `min-height: 100vh`: on browsers with
+ * a collapsing URL bar, 100vh is the *expanded* height, so a full-height page
+ * is taller than what is actually visible and its bottom row sits under the
+ * chrome. Every page is `position: fixed` anyway, so the real job here is
+ * just to give them a correctly-sized containing block. */
+#app {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Media/logo elements must never be the reason a track overflows its row. */
+img,
+video {
+  max-width: 100%;
+}
+
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--color-slate);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-white-veil);
+}

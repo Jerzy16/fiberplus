@@ -1,0 +1,305 @@
+/* ============================================================================
+ * ADAPTIVE LAYER
+ * ----------------------------------------------------------------------------
+ * Loaded last, and the only file in the project allowed to care about screen
+ * size. Everything else describes what a component *is*; this describes what
+ * it becomes on a given panel.
+ *
+ * It works almost entirely by re-pointing the layout tokens declared in
+ * variables.css (--gutter-x, --tile-gap, --rail-tile-width, ...). Component
+ * rules read those tokens, so a new screen shape is a handful of variable
+ * assignments here rather than a duplicated copy of every width/padding rule.
+ *
+ * ---- The model ----
+ *
+ * Two independent things decide how the UI is laid out, and they are handled
+ * separately on purpose:
+ *
+ *   1. SCALE — how big everything is. Handled once, in base.css, by making the
+ *      root font-size track whichever viewport axis is the binding constraint
+ *      (1.3542vw below 16:9, 2.4074vh above it). Since every dimension in the
+ *      app is in rem, the entire interface then breathes with the panel and no
+ *      rule here needs to restate a font size. This is what makes the design
+ *      behave like a TV app: one 16:9 layout, fitted to the largest area the
+ *      screen can give it, rather than a set of discrete "sizes".
+ *
+ *   2. SHAPE — how many tiles fit side by side, and how much of the screen the
+ *      fixed bands (stage headline, player controls) are allowed to take.
+ *      That is what this file adjusts.
+ *
+ * Because scale is already solved, the queries below are driven by the
+ * viewport's ASPECT RATIO first and its pixel width only as a fallback. Width
+ * alone says nothing useful once the root size is proportional — a 1280px and
+ * a 3840px 16:9 panel want the identical layout, while a 1280x1024 4:3 monitor
+ * and a 1280x400 letterboxed viewport want very different ones. Ratio captures
+ * that; width does not. Width queries are kept only for genuinely small
+ * viewports (dev browser windows, phones), where the root size has hit its
+ * legibility floor and the layout really must re-flow.
+ *
+ * ---- Ordering ----
+ *
+ * Blocks run from widest/most spacious to narrowest/most constrained, and all
+ * token overrides carry the same specificity (`:root`), so later blocks win.
+ * Keep that order when adding a case.
+ *
+ * ---- Compatibility ----
+ *
+ * No `gap`, no `display: grid`, no `aspect-ratio`, no `inset`, no `min()`/
+ * `clamp()`, no 8-digit hex — see the notes in variables.css, components.css
+ * and pages.css. Aspect-ratio media queries and custom properties are
+ * supported by every webOS browser this app targets.
+ * ========================================================================= */
+
+
+/* ===========================================================================
+ * 1. ULTRA-WIDE PANELS  (32:9 and 21:9 monitors, letterboxed TV viewports)
+ * ---------------------------------------------------------------------------
+ * Height is the binding axis here, so the root size has already shrunk to fit
+ * it — which leaves a lot of unused horizontal room. Spend it on more channels
+ * in the rail rather than on stretching a handful of enormous tiles across two
+ * metres of screen. The fixed vertical bands also get trimmed, since vertical
+ * space is the scarce resource on these shapes.
+ * ======================================================================== */
+
+@media (min-aspect-ratio: 2/1) {
+  :root {
+    --gutter-x: 3rem;
+    --gutter-y: 1.2rem;
+    --rail-tile-width: 8.5rem;
+    --rail-logo-height: 2.8rem;
+    --provider-tile-width: 10rem;
+    --provider-gap: 2.5rem;
+    --section-gap: 1.6rem;
+  }
+}
+
+@media (min-aspect-ratio: 3/1) {
+  :root {
+    --gutter-x: 4rem;
+    --rail-tile-width: 7.5rem;
+  }
+}
+
+
+/* ===========================================================================
+ * 2. NARROWER-THAN-16:9 LANDSCAPE  (16:10, 3:2, 4:3, 5:4 panels)
+ * ---------------------------------------------------------------------------
+ * Width is now the binding axis, so the root size tracks it and tiles keep
+ * their proportions — but the stage headline's 62% cap was drawn for a wide
+ * frame and squeezes the title on a squarer one.
+ * ======================================================================== */
+
+@media (max-aspect-ratio: 8/5) {
+  :root {
+    --rail-tile-width: 10rem;
+  }
+
+  .stage-hero {
+    max-width: 78%;
+  }
+}
+
+@media (max-aspect-ratio: 5/4) {
+  :root {
+    --rail-tile-width: 10.5rem;
+    --provider-tile-width: 12rem;
+  }
+
+  .stage-hero {
+    max-width: 100%;
+  }
+}
+
+
+/* ===========================================================================
+ * 3. PORTRAIT
+ * ---------------------------------------------------------------------------
+ * Not a TV case, but the app is opened in a phone browser during development.
+ * The provider pair stacks and the stage headline gives up its horizontal cap.
+ * ======================================================================== */
+
+@media (max-aspect-ratio: 1/1) {
+  :root {
+    --gutter-x: 1.25rem;
+    --gutter-y: 1rem;
+    --provider-tile-width: 8.5rem;
+    --provider-gap: 1.5rem;
+    --rail-tile-width: 8.5rem;
+  }
+
+  .providers-title {
+    font-size: 1.6rem;
+  }
+
+  .stage-hero {
+    max-width: 100%;
+  }
+
+  .stage-hero h1 {
+    font-size: 2.2rem;
+  }
+}
+
+
+/* ===========================================================================
+ * 4. SHORT VIEWPORTS  (letterboxed TV output, desktop window with devtools
+ *    open, phone in landscape, on-screen keyboard pushing the viewport up)
+ * ---------------------------------------------------------------------------
+ * The single biggest source of the "everything is cut off" reports. Height is
+ * scarce, and the video-backed screens have two fixed bands competing for it —
+ * the headline block and the rail. Each one gives ground here so the picture
+ * underneath keeps a usable share of the screen.
+ *
+ * Height-only queries, deliberately: this must fire on a 1920x600 viewport
+ * just as much as on a 600x400 one.
+ * ======================================================================== */
+
+@media (max-height: 800px) {
+  :root {
+    --gutter-y: 1rem;
+    --section-gap: 1.4rem;
+    --player-overlay-fade: 2.5rem;
+    --rail-logo-height: 2.8rem;
+  }
+
+  .stage-hero h1 {
+    font-size: 2.4rem;
+  }
+}
+
+@media (max-height: 560px) {
+  :root {
+    --gutter-y: 0.7rem;
+    --section-gap: 1rem;
+    --player-overlay-fade: 1.25rem;
+    --rail-logo-height: 2.4rem;
+    --provider-tile-width: 8rem;
+    --provider-gap: 2rem;
+  }
+
+  /* Trim the stage headline to what actually identifies the channel: the
+   * category line is the first thing to go, the title and the play button are
+   * the only two elements that carry function. */
+  .stage-hero h1 {
+    font-size: 1.8rem;
+  }
+
+  .stage-hero-group {
+    display: none;
+  }
+
+  .stage-hero .btn {
+    padding: 0.7rem 1.5rem;
+  }
+
+  /* At this height the rail heading is costing the rail itself a whole row of
+   * legible tile. */
+  .stage-rail h2 {
+    font-size: 1.1rem;
+    margin-bottom: 0.6rem;
+  }
+
+  .login-card {
+    padding: 1.75rem 1.5rem;
+  }
+
+  .login-card p {
+    margin-top: 0.9rem;
+    margin-bottom: 1.2rem;
+  }
+
+  .providers-title {
+    font-size: 1.5rem;
+  }
+
+  .splash-logo {
+    height: 6rem;
+  }
+
+  .splash-footer {
+    bottom: 1.5rem;
+  }
+}
+
+@media (max-height: 420px) {
+  .stage-rail h2 {
+    display: none;
+  }
+
+  .player-title h1 {
+    font-size: 1.2rem;
+  }
+}
+
+
+/* ===========================================================================
+ * 5. SMALL VIEWPORTS  (dev browser windows, tablets, phones)
+ * ---------------------------------------------------------------------------
+ * Below this point the root size has hit the legibility floor set in base.css,
+ * so the layout no longer scales with the viewport and genuinely has to
+ * re-flow. These are the only width-driven rules in the file, and they come
+ * last so they override any ratio-derived sizing above.
+ * ======================================================================== */
+
+@media (max-width: 1100px) {
+  :root {
+    --gutter-x: 1.5rem;
+    --tile-gap: 0.8rem;
+  }
+}
+
+@media (max-width: 700px) {
+  :root {
+    --gutter-x: 1rem;
+    --tile-gap: 0.6rem;
+    --rail-tile-width: 7.5rem;
+    --provider-tile-width: 7.5rem;
+    --provider-gap: 1.5rem;
+  }
+
+  .login-card {
+    padding: 1.75rem 1.25rem;
+  }
+
+  .stage-hero h1 {
+    font-size: 1.8rem;
+  }
+}
+
+@media (max-width: 420px) {
+  :root {
+    --gutter-x: 0.75rem;
+    --provider-tile-width: 6.5rem;
+    --provider-gap: 1rem;
+  }
+
+  .providers-title {
+    font-size: 1.35rem;
+  }
+}
+
+
+/* ===========================================================================
+ * 6. INPUT-MODE REFINEMENTS
+ * ---------------------------------------------------------------------------
+ * Nothing to do with size, but it belongs with the adaptation rules: respect
+ * the platform's reduced-motion setting. The splash animations are decorative
+ * and SpatialNav's smooth scroll is the part that actually causes discomfort.
+ * ======================================================================== */
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+
+  /* The spinner is the exception: its animation is the entire signal that a
+   * fetch is still in flight, so it keeps spinning (just slower). */
+  .spinner {
+    animation-duration: 1.6s !important;
+    animation-iteration-count: infinite !important;
+  }
+}

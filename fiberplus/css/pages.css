@@ -1,0 +1,497 @@
+/* ===== Full-screen page shell (shared) =====
+ * Every screen is pinned to the viewport and scrolls internally instead of
+ * letting the document scroll. That keeps the fixed furniture permanently on
+ * screen, gives SpatialNav a single, predictable scroll area per page, and —
+ * most importantly — makes the layout follow the panel size: a page that
+ * relies on document flow ends up as tall as its content and gets clipped by
+ * the TV's viewport with no way to reach the rest.
+ *
+ * Offsets are written as four longhands on purpose: the `inset` shorthand
+ * is Chromium 87+, so on webOS TV browsers it is dropped entirely and a
+ * `position:fixed` box with no offsets shrink-wraps its content in the
+ * top-left corner — exactly the "everything squeezed into a small fixed
+ * box" symptom. The same applies to every absolute overlay below. */
+.tv-page {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* Floating circular control pinned to the title-safe top-left corner —
+ * the back arrow on login and the home glyph on the stage. */
+.corner-btn {
+  position: absolute;
+  top: var(--gutter-y);
+  left: var(--gutter-x);
+  z-index: 5;
+}
+
+/* `left: auto` has to be restated: the two rules have equal specificity and
+ * this one only wins on source order, so leaving the inherited `left` in
+ * place would pin the button to both edges and stretch it. */
+.corner-btn-right {
+  left: auto;
+  right: var(--gutter-x);
+}
+
+/* ===== Splash =====
+ * First frame of the app: the brand mark alone on the ambient backdrop. */
+.splash-page {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-bg);
+  background-image: var(--app-backdrop);
+}
+
+.splash-logo {
+  width: auto;
+  height: 9rem;
+  max-width: 60%;
+  animation: fade-up 0.7s ease both;
+}
+
+.splash-footer {
+  position: absolute;
+  bottom: 3.5rem;
+  color: var(--color-text-dim);
+  font-size: 1rem;
+  animation: fade-up 0.7s ease 0.25s both;
+}
+
+@keyframes fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(0.75rem);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ===== Provider picker =====
+ * Same centring caveat as .login-page: `margin: auto` on the inner block
+ * rather than `justify-content: center` on the scroller, so content taller
+ * than a short panel stays reachable by scrolling instead of overflowing
+ * off the top edge. */
+.providers-page {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  display: flex;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: var(--gutter-y) var(--gutter-x);
+  background: var(--color-bg);
+  background-image: var(--app-backdrop);
+}
+
+.providers-inner {
+  margin: auto;
+  width: 100%;
+  text-align: center;
+}
+
+.providers-title {
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--color-white);
+  margin-bottom: var(--section-gap);
+}
+
+/* Fixed-size, centred pair rather than a proportional grid: there are only
+ * ever a handful of providers and the design wants each one large. Spacing
+ * is a margin on each tile, not flex `gap` — see components.css. */
+.providers-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: center;
+}
+
+.provider-card-wrap {
+  position: relative;
+  width: var(--provider-tile-width);
+  max-width: 100%;
+  margin: 0 calc(var(--provider-gap) * 0.5) var(--tile-gap);
+  min-width: 0;
+}
+
+.providers-row > .state-message {
+  flex: 1 1 100%;
+  width: 100%;
+  margin: 0;
+}
+
+/* ===== Login ===== */
+.login-page {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  display: flex;
+  overflow-y: auto;
+  padding: var(--gutter-y) var(--gutter-x);
+  background: var(--color-bg);
+  background-image: var(--app-backdrop);
+}
+
+/* Centred with `margin: auto` on the card instead of `align-items /
+ * justify-content: center` on the page. A centred flex item that is taller
+ * than its container overflows in both directions, and the overflow above
+ * the top edge cannot be scrolled to — on a short panel (or with the
+ * on-screen keyboard up) that put the avatar and the user field permanently
+ * out of reach. `margin: auto` centres it while it fits and falls back to
+ * ordinary top-aligned scrolling once it does not. */
+.login-card {
+  width: 100%;
+  max-width: 26.5rem;
+  margin: auto;
+  background: var(--color-navy-veil);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: 3rem 2.5rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.login-avatar {
+  width: 5.5rem;
+  height: 5.5rem;
+  border-radius: 50%;
+  border: 1px solid var(--color-border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  overflow: hidden;
+}
+
+.login-avatar img,
+.login-avatar svg {
+  width: 55%;
+  height: 55%;
+  object-fit: contain;
+}
+
+.login-card p {
+  color: var(--color-text-muted);
+  font-size: 0.95rem;
+  margin-top: 1.3rem;
+  margin-bottom: 2rem;
+}
+
+.login-card form {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.login-card form > * {
+  margin-bottom: 0.9rem;
+}
+
+.login-card form > *:last-child {
+  margin-bottom: 0;
+}
+
+.login-card .btn-primary {
+  width: 100%;
+  margin-top: 1.4rem;
+}
+
+/* ===== Home stage =====
+ * The provider's landing screen: the first channel plays full-bleed behind
+ * everything, a gradient scrim carries the copy, and the channel rail sits
+ * along the bottom edge. Opaque black shell so the body backdrop never
+ * shows through while the stream is still connecting. */
+.stage-page {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  overflow: hidden;
+  background: #000;
+}
+
+.stage-video {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  background: #000;
+  z-index: 0;
+}
+
+/* Two crossed gradients rather than one: the vertical pass anchors the rail
+ * and the horizontal pass keeps the headline legible over a bright picture,
+ * without dimming the centre of the frame. */
+.stage-scrim {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 1;
+  background:
+    linear-gradient(90deg, rgba(13, 13, 13, 0.92) 0%, rgba(13, 13, 13, 0.5) 38%, rgba(13, 13, 13, 0) 72%),
+    linear-gradient(0deg, rgba(13, 13, 13, 0.97) 0%, rgba(13, 13, 13, 0.8) 26%, rgba(13, 13, 13, 0) 62%),
+    linear-gradient(180deg, rgba(13, 13, 13, 0.7) 0%, rgba(13, 13, 13, 0) 22%);
+}
+
+/* Bottom-anchored column: the headline block sits directly above the rail,
+ * both pushed to the bottom of the panel by `justify-content: flex-end`, so
+ * the layout stays correct whatever the screen height. */
+.stage-body {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding-bottom: var(--gutter-y);
+  min-height: 0;
+}
+
+.stage-hero {
+  padding: 0 var(--gutter-x);
+  margin-bottom: var(--section-gap);
+  /* Bounded so a long channel name never runs into the picture's focal
+   * point on the right of the frame. */
+  max-width: 62%;
+  min-width: 0;
+}
+
+.stage-hero h1 {
+  font-size: 3rem;
+  font-weight: 800;
+  line-height: 1.1;
+  color: var(--color-white);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.stage-hero-group {
+  margin-top: 0.2rem;
+  margin-bottom: 1.4rem;
+  font-size: 1.1rem;
+  color: var(--color-text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.stage-rail {
+  padding: 0 var(--gutter-x);
+  flex-shrink: 0;
+}
+
+.stage-rail h2 {
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: var(--color-white);
+  margin-bottom: 1rem;
+}
+
+/* ===== Channel rail (shared by the stage and the player) =====
+ * One row, scrolled sideways by the remote — SpatialNav.reveal drives the
+ * scroll position. Never wraps: a wrapped rail grows into the picture and
+ * eats the screen it is supposed to sit on top of. */
+.channels-row {
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: stretch;
+  overflow-x: auto;
+  overflow-y: hidden;
+  margin: 0 calc(var(--tile-gap) * -0.5);
+  padding-bottom: 0.3rem;
+  -webkit-overflow-scrolling: touch;
+  /* The rail is driven by the remote, so its scrollbar is pure noise that
+   * also steals a few pixels of height from the row. */
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.channels-row::-webkit-scrollbar {
+  display: none;
+  width: 0;
+  height: 0;
+}
+
+.channels-row > .channel-card {
+  flex: 0 0 auto;
+  width: var(--rail-tile-width);
+  margin: 0 calc(var(--tile-gap) * 0.5);
+}
+
+.channels-row > .state-message {
+  flex: 1 1 100%;
+  width: 100%;
+  margin: 0;
+  padding: 1rem;
+  text-align: left;
+}
+
+/* ===== Player ===== */
+.player-page {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  background: #000;
+  z-index: 1000;
+  overflow: hidden;
+}
+
+.player-video {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  background: #000;
+}
+
+.player-top {
+  position: absolute;
+  top: 0;
+  right: 0;
+  left: 0;
+  z-index: 3;
+  display: flex;
+  align-items: center;
+  flex-wrap: nowrap;
+  min-width: 0;
+  padding: var(--gutter-y) var(--gutter-x);
+  background: linear-gradient(180deg, rgba(13, 13, 13, 0.8), rgba(13, 13, 13, 0));
+  transition: opacity var(--transition-normal);
+}
+
+.player-top > .icon-btn {
+  margin-right: 1.3rem;
+}
+
+.player-title {
+  min-width: 0;
+}
+
+.player-title h1 {
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: var(--color-white);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.player-title span {
+  display: block;
+  margin-top: 0.1rem;
+  font-size: 0.95rem;
+  color: var(--color-text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.player-bottom {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 3;
+  /* Generous top padding is only there to stretch the gradient; it is the
+   * first thing to go on a short panel (see responsive.css) so the controls
+   * themselves never get pushed under the bottom edge. */
+  padding: var(--player-overlay-fade) var(--gutter-x) var(--gutter-y);
+  background: linear-gradient(0deg, rgba(13, 13, 13, 0.9), rgba(13, 13, 13, 0));
+  transition: opacity var(--transition-normal);
+}
+
+.player-page.controls-hidden .player-top,
+.player-page.controls-hidden .player-bottom {
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* Pressing Down swaps the single transport control for the full channel
+ * rail; Up (or Back) swaps it back. `display: none` rather than
+ * visibility/opacity matters here: SpatialNav's visibility test skips
+ * zero-box elements, so hiding a block also takes it out of the remote's
+ * focus order instead of leaving invisible stops behind. */
+.player-rail {
+  display: none;
+}
+
+.player-page.rail-open .player-controls {
+  display: none;
+}
+
+.player-page.rail-open .player-rail {
+  display: block;
+}
+
+/* Same centring caveat as .login-page / .fullscreen-state: a long backend
+ * error message plus three wrapped action buttons can outgrow a short panel,
+ * and a centred overflow puts the message itself out of reach. */
+.player-error-overlay {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 4;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  overflow-y: auto;
+  background: rgba(13, 13, 13, 0.85);
+  text-align: center;
+  padding: var(--gutter-y) var(--gutter-x);
+}
+
+.player-error-overlay > *:first-child {
+  margin-top: auto;
+}
+
+.player-error-overlay > *:last-child {
+  margin-bottom: auto;
+}
+
+.player-error-overlay .state-message {
+  margin-bottom: 1.2rem;
+}
+
+/* Screen-shape adaptations (tile sizes, gutters, short/narrow/ultra-wide
+ * panels) all live in css/responsive.css, which is loaded last. Keep this
+ * file describing *what a page is*, not what it becomes on a given panel. */

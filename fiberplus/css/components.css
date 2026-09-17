@@ -1,0 +1,376 @@
+/* ===== Remote/keyboard focus =====
+ * SpatialNav (js/core/spatial-nav.js) toggles `.focused` on whichever
+ * element currently has "the cursor". Every navigable element gets the
+ * same unmistakable treatment regardless of its resting colors — solid
+ * white fill, black content — so position is obvious on a TV from a
+ * distance. That white fill *is* the design's selected state: the light
+ * provider tile and the light channel tile in the mockups are simply the
+ * element the cursor is resting on.
+ *
+ * Kept as an !important override so it always wins over each component's
+ * own background/color, while border/scale accents below still layer on
+ * top for extra polish. */
+.focused {
+  background-color: var(--color-white) !important;
+  border-color: var(--color-white) !important;
+  outline: none;
+}
+
+.focused,
+.focused * {
+  color: var(--color-navy) !important;
+}
+
+/* Inline brand/channel marks drawn with `fill="currentColor"` follow the
+ * same inversion, so a white-on-navy logo becomes navy-on-white. */
+.focused svg[fill='currentColor'],
+.focused svg [fill='currentColor'] {
+  fill: var(--color-navy) !important;
+}
+
+/* ===== Flex spacing =====
+ * The `gap` property only applies to flex containers from Chromium 84 on,
+ * and every webOS TV browser in the field is older than that — the
+ * declaration is dropped, which is why controls and tiles ran into each
+ * other on the TV while looking correctly spaced on a desktop browser.
+ * Every flex row in this app therefore spaces its children with margins
+ * instead. (Same reason `display:grid` is avoided in pages.css.) */
+
+/* ===== Buttons ===== */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.95rem 2rem;
+  border-radius: var(--radius-sm);
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--color-white);
+  transition: background var(--transition-fast), color var(--transition-fast);
+}
+
+.btn > svg {
+  margin-right: 0.6rem;
+  flex-shrink: 0;
+}
+
+/* The design's action colour: the muted slate of the login button and the
+ * "Ver ahora" call to action. Focus turns it white (see .focused). */
+.btn-primary {
+  background: var(--color-action);
+  color: var(--color-white);
+}
+
+.btn-primary:hover {
+  background: var(--color-white-veil);
+}
+
+.btn-ghost {
+  background: var(--color-navy-veil);
+  border: 1px solid var(--color-border);
+  color: var(--color-white);
+}
+
+.btn-ghost:hover {
+  background: var(--color-slate);
+}
+
+/* Circular overlay control — the back/home/pause pills that float over the
+ * artwork. Transparent by design so the picture reads through the ring. */
+.icon-btn {
+  width: 3.2rem;
+  height: 3.2rem;
+  border-radius: var(--radius-pill);
+  background: var(--color-navy-veil);
+  border: 1px solid var(--color-white);
+  color: var(--color-white);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: background var(--transition-fast), color var(--transition-fast);
+}
+
+.icon-btn:hover {
+  background: var(--color-slate);
+}
+
+.icon-btn.icon-btn-lg {
+  width: 3.8rem;
+  height: 3.8rem;
+}
+
+/* ===== Inputs ===== */
+.input {
+  width: 100%;
+  padding: 1.05rem 1.25rem;
+  background: var(--color-input);
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  color: var(--color-white);
+  font-size: 1rem;
+  outline: none;
+  transition: border-color var(--transition-fast);
+}
+
+.input::placeholder {
+  color: var(--color-text-dim);
+}
+
+/* A focused text field keeps its dark fill — inverting it to the white
+ * cursor treatment would hide the text being typed. It gets the ring
+ * instead, which is why the !important overrides above are re-stated here
+ * (same specificity would otherwise lose on source order). */
+.input.focused,
+.input:focus {
+  background-color: var(--color-input) !important;
+  border-color: var(--color-white) !important;
+  color: var(--color-white) !important;
+  box-shadow: var(--focus-ring);
+}
+
+/* ===== Provider tile =====
+ * A circle with the provider's name captioned underneath it. The perfect
+ * square that the border-radius rounds off comes from the padding-top
+ * percentage hack rather than the `aspect-ratio` property (Chromium 88+,
+ * unavailable on webOS TVs): there the declaration is dropped, the card is
+ * left with no height of its own and collapses around the raw logo — which
+ * is what broke the provider row on the TV. The inner layer carries the
+ * centring, since the outer box's height now comes from padding. */
+.provider-card {
+  position: relative;
+  width: 100%;
+  height: 0;
+  padding-top: 100%;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 50%;
+  cursor: pointer;
+  transition: background var(--transition-fast), border-color var(--transition-fast);
+}
+
+.provider-card-inner {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Both bounds are a share of the circle's own size, so the mark keeps its
+ * proportion inside it on every panel instead of being pinned in rem. The
+ * width cap is what keeps a wide logo clear of the curved edge; the height
+ * is what actually sets the size for the portrait marks shipped today. */
+.provider-card-art {
+  width: 100%;
+  height: 48%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.provider-card-art > svg,
+.provider-card-art > img {
+  height: 100%;
+  width: auto;
+  max-width: 62%;
+  object-fit: contain;
+}
+
+/* Caption, not a label inside the button: it sits outside .provider-card so
+ * it stays white when the cursor fills the circle white. */
+.provider-card-label {
+  margin-top: 1.3rem;
+  font-size: 1.15rem;
+  font-weight: 600;
+  text-align: center;
+  color: var(--color-white);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ===== Channel tile =====
+ * The single tile shape used by both rails (home stage and player). Logo
+ * band on top, name underneath — no badge, no category line: at rail size
+ * they were unreadable and the mark alone identifies the channel. */
+.channel-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 0.9rem 0.7rem;
+  background: var(--color-surface);
+  border: 1px solid transparent;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  overflow: hidden;
+  transition: background var(--transition-fast), border-color var(--transition-fast);
+}
+
+/* The channel currently on screen, when it is not the one under the cursor. */
+.channel-card.active {
+  border-color: var(--color-border);
+  background: var(--color-slate);
+}
+
+.channel-card-media {
+  position: relative;
+  width: 100%;
+  height: var(--rail-logo-height);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+/* No width/height of its own: with both axes left `auto` and only maximums
+ * set, the browser scales the logo to fit while preserving its aspect ratio,
+ * which is one less thing depending on `object-fit` (unsupported on the
+ * oldest webOS engines, where it would otherwise stretch every logo). */
+.channel-card-logo {
+  display: none;
+  position: relative;
+  max-width: 78%;
+  max-height: 100%;
+  object-fit: contain;
+}
+
+/* `has-logo` is added by LogoLoader only once the image has actually
+ * decoded, so the tile never shows an empty box while its logo is queued
+ * behind other requests — it shows the letter until there is something
+ * better to put there. */
+.channel-card-media.has-logo .channel-card-logo {
+  display: block;
+}
+
+/* "No signal" placeholder for channels whose playlist entry carries no logo,
+ * or whose logo failed to load. It fills the media box, so it is switched off
+ * by `.has-logo` rather than layered under the image: as an absolutely-
+ * positioned element it paints *above* in-flow content whatever the source
+ * order, which is what was once hiding every logo behind it. */
+.channel-card-fallback {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-text-dim);
+}
+
+/* Sized off the logo band rather than in rem, so the placeholder keeps the
+ * same visual weight as a real logo on every panel. Width is capped too: the
+ * mark is landscape (273x199), so on a short band the height alone would let
+ * it run into the tile's edges. */
+.channel-card-fallback svg {
+  height: 62%;
+  width: auto;
+  max-width: 72%;
+}
+
+.channel-card-media.has-logo .channel-card-fallback {
+  display: none;
+}
+
+.channel-card-name {
+  width: 100%;
+  margin-top: 0.7rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-align: center;
+  color: var(--color-white);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ===== Loading / error states ===== */
+.state-message {
+  text-align: center;
+  padding: var(--section-gap) 1.5rem;
+  color: var(--color-text-muted);
+  font-size: 1.05rem;
+  /* A provider error can carry a whole backend message; without this it
+   * stretched its flex track and forced the page to scroll sideways. */
+  overflow-wrap: break-word;
+  word-wrap: break-word;
+}
+
+.state-message.is-error {
+  color: var(--color-danger);
+}
+
+.state-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  margin-top: 1rem;
+}
+
+.state-actions > * {
+  margin: 0 0.4rem 0.8rem;
+}
+
+.spinner {
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: 50%;
+  border: 0.1875rem solid var(--color-slate);
+  border-top-color: var(--color-white);
+  margin: 0 auto 1rem;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* ===== Fullscreen loading / error takeover ===== */
+/* `justify-content: center` is intentionally absent: on a short panel a
+ * centred flex column whose content is taller than the box overflows equally
+ * in *both* directions, and the part that spills above the top edge is
+ * unreachable — no scroll position can bring it back. `margin: auto` on the
+ * child centres it while it fits and degrades to normal top-aligned
+ * scrolling once it does not. Same pattern on .login-page. */
+.fullscreen-state {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 2000;
+  background: var(--color-bg);
+  background-image: var(--app-backdrop);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  overflow-y: auto;
+  padding: var(--gutter-y) var(--gutter-x);
+  text-align: center;
+}
+
+.fullscreen-state > *:first-child {
+  margin-top: auto;
+}
+
+.fullscreen-state > *:last-child {
+  margin-bottom: auto;
+}
+
+.fullscreen-state .spinner {
+  width: 3.5rem;
+  height: 3.5rem;
+  border-width: 0.25rem;
+}
+
+.fullscreen-state .state-message {
+  font-size: 1.3rem;
+}
