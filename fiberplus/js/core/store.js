@@ -7,7 +7,7 @@ var Store = (function () {
   var state = {
     providerId: null,
     channels: [],
-    backRoute: '#providers',
+    backRoute: '#login/fiberplus',
     navHandler: null,
     onBack: null
   };

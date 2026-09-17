@@ -6,7 +6,7 @@ var SplashPage = (function () {
   function render() {
     document.getElementById('app').innerHTML =
       '<div class="splash-page">' +
-      '<img class="splash-logo" src="assets/Fiberplus.png" alt="Fiberplus" />' +
+      '<img class="splash-logo" src="assets/Fiberplus.svg" alt="Fiberplus" />' +
       '<div class="splash-footer">Fiberplus</div>' +
       '</div>';
   }

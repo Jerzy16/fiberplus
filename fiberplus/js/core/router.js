@@ -19,7 +19,7 @@ var Router = (function () {
   }
 
   function resolve() {
-    var hash = (window.location.hash || '#providers').slice(1);
+    var hash = (window.location.hash || '#login/fiberplus').slice(1);
 
     if (hash.indexOf('player') !== 0 && typeof PlayerPage !== 'undefined' && PlayerPage.teardown) {
       PlayerPage.teardown();
@@ -42,7 +42,7 @@ var Router = (function () {
       }
     }
 
-    navigate('#providers');
+    navigate('#login/fiberplus');
   }
 
   function navigate(hash) {
@@ -53,7 +53,8 @@ var Router = (function () {
     }
   }
 
-  function start() {
+  function start(initialHash) {
+    if (initialHash) window.location.hash = initialHash;
     window.addEventListener('hashchange', resolve);
     resolve();
   }

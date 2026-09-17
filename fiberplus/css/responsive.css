@@ -67,8 +67,6 @@
     --gutter-y: 1.2rem;
     --rail-tile-width: 8.5rem;
     --rail-logo-height: 2.8rem;
-    --provider-tile-width: 10rem;
-    --provider-gap: 2.5rem;
     --section-gap: 1.6rem;
   }
 }
@@ -102,7 +100,6 @@
 @media (max-aspect-ratio: 5/4) {
   :root {
     --rail-tile-width: 10.5rem;
-    --provider-tile-width: 12rem;
   }
 
   .stage-hero {
@@ -115,20 +112,14 @@
  * 3. PORTRAIT
  * ---------------------------------------------------------------------------
  * Not a TV case, but the app is opened in a phone browser during development.
- * The provider pair stacks and the stage headline gives up its horizontal cap.
+ * The stage headline gives up its horizontal cap.
  * ======================================================================== */
 
 @media (max-aspect-ratio: 1/1) {
   :root {
     --gutter-x: 1.25rem;
     --gutter-y: 1rem;
-    --provider-tile-width: 8.5rem;
-    --provider-gap: 1.5rem;
     --rail-tile-width: 8.5rem;
-  }
-
-  .providers-title {
-    font-size: 1.6rem;
   }
 
   .stage-hero {
@@ -173,8 +164,6 @@
     --section-gap: 1rem;
     --player-overlay-fade: 1.25rem;
     --rail-logo-height: 2.4rem;
-    --provider-tile-width: 8rem;
-    --provider-gap: 2rem;
   }
 
   /* Trim the stage headline to what actually identifies the channel: the
@@ -206,10 +195,6 @@
   .login-card p {
     margin-top: 0.9rem;
     margin-bottom: 1.2rem;
-  }
-
-  .providers-title {
-    font-size: 1.5rem;
   }
 
   .splash-logo {
@@ -253,8 +238,6 @@
     --gutter-x: 1rem;
     --tile-gap: 0.6rem;
     --rail-tile-width: 7.5rem;
-    --provider-tile-width: 7.5rem;
-    --provider-gap: 1.5rem;
   }
 
   .login-card {
@@ -269,12 +252,6 @@
 @media (max-width: 420px) {
   :root {
     --gutter-x: 0.75rem;
-    --provider-tile-width: 6.5rem;
-    --provider-gap: 1rem;
-  }
-
-  .providers-title {
-    font-size: 1.35rem;
   }
 }
 

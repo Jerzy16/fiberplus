@@ -18,7 +18,7 @@ var HomePage = (function () {
   async function render(providerId) {
     var provider = Providers.getById(providerId);
     if (!provider) {
-      Router.navigate('#providers');
+      Router.navigate('#login/fiberplus');
       return;
     }
     if (provider.requiresAuth && !AuthService.isLoggedIn(provider.id)) {
@@ -28,7 +28,7 @@ var HomePage = (function () {
 
     if (typeof VideoEngine !== 'undefined') VideoEngine.destroy();
     destroyPreview();
-    Store.setBackRoute('#providers');
+    Store.setBackRoute('#login/fiberplus');
     Store.setNavHandler(null);
     SpatialNav.clear();
 
@@ -47,7 +47,7 @@ var HomePage = (function () {
         if (provider.requiresAuth) AuthService.saveChannels(provider.id, channels);
       } catch (err) {
         document.getElementById('app').innerHTML = StateMessage.fullscreen(
-          StateMessage.error('Error al cargar canales: ' + err.message, '#providers', 'Volver')
+          StateMessage.error('Error al cargar canales: ' + err.message, '#login/fiberplus', 'Volver')
         );
         return;
       }
@@ -55,7 +55,7 @@ var HomePage = (function () {
 
     if (!channels.length) {
       document.getElementById('app').innerHTML = StateMessage.fullscreen(
-        StateMessage.error('No hay canales disponibles para este proveedor.', '#providers', 'Volver')
+        StateMessage.error('No hay canales disponibles para este proveedor.', '#login/fiberplus', 'Volver')
       );
       return;
     }
@@ -73,9 +73,7 @@ var HomePage = (function () {
     loadPreview(channels[startIndex]);
 
     Store.setNavHandler(handleKeyNav);
-    // The cursor opens on the call to action rather than on the home button
-    // in the corner, which is where SpatialNav's "topmost element" rule would
-    // otherwise put it.
+    // The cursor opens on the call to action rather than on a corner control.
     SpatialNav.focusSelector('#stage-play', root());
   }
 
@@ -84,9 +82,6 @@ var HomePage = (function () {
       '<div class="stage-page" id="home-page-body">' +
       '<video class="stage-video" id="stage-video" muted autoplay loop playsinline></video>' +
       '<div class="stage-scrim"></div>' +
-      '<button class="icon-btn corner-btn" onclick="Router.navigate(\'#providers\')" title="Inicio">' +
-      Icons.home(20) +
-      '</button>' +
       // Only providers behind a login have a session to end; one DxD is free,
       // so the control would do nothing there.
       (provider.requiresAuth

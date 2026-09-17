@@ -64,12 +64,6 @@
   /* Vertical rhythm between the blocks of a page. */
   --section-gap: 2rem;
 
-  /* Provider circles are a fixed-size, centred pair rather than a grid:
-   * there are only ever a handful of them and the design wants them large.
-   * The width doubles as the circle's diameter. */
-  --provider-tile-width: 11rem;
-  --provider-gap: 3rem;
-
   /* Width of a channel tile inside a horizontally scrolled rail. */
   --rail-tile-width: 9.5rem;
   /* Height of the logo band inside a channel tile. */

@@ -9,7 +9,7 @@ var Providers = (function () {
     {
       id: 'fiberplus',
       name: 'Fiberplus',
-      logo: 'assets/fiberplus.png',
+      logo: 'assets/fiberplus.svg',
       requiresAuth: true,
       free: false,
       // Xtream Codes backend: the credentials are validated through

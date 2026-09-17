@@ -52,7 +52,7 @@ pQLXtgWgNg==</DigestValue>
 <DigestValue>G4pdDJWflhuTzv7On8RZRFLEdw00CIqScDo75WgbHxwmOT+j+m/2SpDWJ6BBIiVg6gjSw5Hs9M1P
 HySlyno4TQ==</DigestValue>
 </Reference>
-<Reference URI="icon.png">
+<Reference URI="icon.svg">
 <DigestMethod Algorithm="http://www.w3.org/2001/04/xmlenc#sha512"></DigestMethod>
 <DigestValue>uHV5dCBy9ATFeYtxbwV5dB5ENC52A5lTy0q1H5HIx5FkS7R1g0sto0f55XHVSQBbAjdT2F1lWqct
 koyizXKzZA==</DigestValue>
@@ -177,7 +177,7 @@ SFI8HNO6lA==</DigestValue>
 <DigestValue>lMnsbGTTuCBI3dnEJGrAm3UAqsy2WyC/d5Ba8KWzkrbSEagQf/9Df0FCZExUQmZ0J+2F93LUdpJB
 WzkCnT3NEA==</DigestValue>
 </Reference>
-<Reference URI="largeIcon.png">
+<Reference URI="largeIcon.svg">
 <DigestMethod Algorithm="http://www.w3.org/2001/04/xmlenc#sha512"></DigestMethod>
 <DigestValue>PhcnH4Mhf+/BkypIs2xnEqYQLYkprS5BLkLXMXFj2tzp84aHAoZCKecaxT0v8SHuSXMdvHJaLIfy
 lGKpGme+YA==</DigestValue>

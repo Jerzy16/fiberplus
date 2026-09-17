@@ -3,8 +3,8 @@
  * cross-page actions (`App.*`) that component markup calls via inline
  * onclick handlers.
  *
- * The flow is four screens deep:
- *   splash -> #providers -> [#login/:id] -> #home/:id -> #player/:id/:url
+ * The flow starts at the login gate:
+ *   splash -> [#login/:id] -> #home/:id -> #player/:id/:url
  */
 var App = (function () {
   function init() {
@@ -23,9 +23,6 @@ var App = (function () {
   }
 
   function registerRoutes() {
-    Router.register('providers', function () {
-      ProvidersPage.render();
-    });
     Router.register('login/:providerId', function (params) {
       LoginPage.render(params.providerId);
     });
@@ -40,18 +37,17 @@ var App = (function () {
   function bootWithSplash() {
     SplashPage.render();
     setTimeout(function () {
-      Router.start();
-    }, 1600);
-  }
+      var providers = Providers.getAll();
+      var firstAuthProvider = providers.filter(function (provider) {
+        return provider.requiresAuth;
+      })[0];
 
-  function openProvider(providerId) {
-    var provider = Providers.getById(providerId);
-    if (!provider) return;
-    if (provider.requiresAuth && !AuthService.isLoggedIn(providerId)) {
-      Router.navigate('#login/' + providerId);
-    } else {
-      Router.navigate('#home/' + providerId);
-    }
+      if (firstAuthProvider) {
+        Router.start('#login/' + firstAuthProvider.id);
+      } else {
+        Router.start();
+      }
+    }, 1600);
   }
 
   /* `index` is a position in the provider's full channel list — both rails
@@ -64,7 +60,7 @@ var App = (function () {
   }
 
   function exitPlayer() {
-    Router.navigate(Store.get().backRoute || '#providers');
+    Router.navigate(Store.get().backRoute || '#login/fiberplus');
   }
 
   /* Ends one provider's session (the stage's logout button passes its id) or,
@@ -83,12 +79,11 @@ var App = (function () {
       });
     }
     Store.clearCache();
-    Router.navigate('#providers');
+    Router.navigate(providerId ? '#login/' + providerId : '#login/fiberplus');
   }
 
   return {
     init: init,
-    openProvider: openProvider,
     playChannelAt: playChannelAt,
     exitPlayer: exitPlayer,
     logout: logout

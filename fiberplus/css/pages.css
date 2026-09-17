@@ -81,62 +81,6 @@
   }
 }
 
-/* ===== Provider picker =====
- * Same centring caveat as .login-page: `margin: auto` on the inner block
- * rather than `justify-content: center` on the scroller, so content taller
- * than a short panel stays reachable by scrolling instead of overflowing
- * off the top edge. */
-.providers-page {
-  position: fixed;
-  top: 0;
-  right: 0;
-  bottom: 0;
-  left: 0;
-  display: flex;
-  overflow-y: auto;
-  overflow-x: hidden;
-  padding: var(--gutter-y) var(--gutter-x);
-  background: var(--color-bg);
-  background-image: var(--app-backdrop);
-}
-
-.providers-inner {
-  margin: auto;
-  width: 100%;
-  text-align: center;
-}
-
-.providers-title {
-  font-size: 2rem;
-  font-weight: 700;
-  color: var(--color-white);
-  margin-bottom: var(--section-gap);
-}
-
-/* Fixed-size, centred pair rather than a proportional grid: there are only
- * ever a handful of providers and the design wants each one large. Spacing
- * is a margin on each tile, not flex `gap` — see components.css. */
-.providers-row {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: flex-start;
-  justify-content: center;
-}
-
-.provider-card-wrap {
-  position: relative;
-  width: var(--provider-tile-width);
-  max-width: 100%;
-  margin: 0 calc(var(--provider-gap) * 0.5) var(--tile-gap);
-  min-width: 0;
-}
-
-.providers-row > .state-message {
-  flex: 1 1 100%;
-  width: 100%;
-  margin: 0;
-}
-
 /* ===== Login ===== */
 .login-page {
   position: fixed;

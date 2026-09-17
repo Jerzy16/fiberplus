@@ -6,7 +6,7 @@ var LoginPage = (function () {
   function render(providerId) {
     var provider = Providers.getById(providerId);
     if (!provider) {
-      Router.navigate('#providers');
+      Router.navigate('#login/fiberplus');
       return;
     }
     if (!provider.requiresAuth) {
@@ -15,15 +15,12 @@ var LoginPage = (function () {
     }
 
     if (typeof VideoEngine !== 'undefined') VideoEngine.destroy();
-    Store.setBackRoute('#providers');
+    Store.setBackRoute('#login/fiberplus');
     Store.setNavHandler(handleKeyNav);
     SpatialNav.clear();
 
     document.getElementById('app').innerHTML =
       '<div class="login-page" id="login-page-body">' +
-      '<button class="icon-btn corner-btn" onclick="Router.navigate(\'#providers\')" title="Volver">' +
-      Icons.back(20) +
-      '</button>' +
       '<div class="login-card">' +
       loginCardContent(provider) +
       '</div>' +

@@ -308,7 +308,7 @@ var PlayerPage = (function () {
       closeRail();
       return;
     }
-    Router.navigate(Store.get().backRoute || '#providers');
+    Router.navigate(Store.get().backRoute || '#login/fiberplus');
   }
 
   function handleKeyNav(e) {

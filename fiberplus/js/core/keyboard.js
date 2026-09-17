@@ -16,7 +16,7 @@ var Keyboard = (function () {
       if (state.onBack) {
         state.onBack();
       } else {
-        Router.navigate(state.backRoute || '#providers');
+        Router.navigate(state.backRoute || '#login/fiberplus');
       }
       return;
     }
