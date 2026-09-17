@@ -21,8 +21,12 @@
 
   <script>
     if (window.location.protocol === 'http:' || window.location.protocol === 'https:') {
-      window.__IPTV_PROXY_URL__ = '/api/proxy?url=';
-      window.__IPTV_TRANSCODER_URL__ = '/api/transcode?url=';
+      var backendOrigin = window.location.port === '8080'
+        ? ''
+        : (window.location.protocol + '//' + window.location.hostname + ':8080');
+      window.__IPTV_BACKEND_ORIGIN__ = backendOrigin || window.location.origin;
+      window.__IPTV_PROXY_URL__ = backendOrigin + '/api/proxy?url=';
+      window.__IPTV_TRANSCODER_URL__ = backendOrigin + '/api/transcode?url=';
     }
   </script>
 

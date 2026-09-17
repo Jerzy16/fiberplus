@@ -34,6 +34,15 @@ var VideoEngine = (function () {
     errorListener = fn;
   }
 
+  function getBackendOrigin() {
+    if (typeof window === 'undefined') return '';
+    return window.__IPTV_BACKEND_ORIGIN__ || window.location.origin;
+  }
+
+  function isBackendUrl(url) {
+    return /^https?:\/\//i.test(url) && url.indexOf(getBackendOrigin() + '/') === 0;
+  }
+
   function init(videoEl) {
     videoElement = videoEl;
     if (!videoElement) return;
@@ -48,7 +57,8 @@ var VideoEngine = (function () {
       typeof window !== 'undefined' &&
       window.location &&
       window.__IPTV_PROXY_URL__ &&
-      /^https?:\/\//i.test(url)
+      /^https?:\/\//i.test(url) &&
+      !isBackendUrl(url)
     ) {
       return window.__IPTV_PROXY_URL__ + encodeURIComponent(url);
     }
@@ -79,7 +89,11 @@ var VideoEngine = (function () {
         return response.json();
       })
       .then(function (data) {
-        done(data && data.url ? data.url : null);
+        var transcodedUrl = data && data.url ? data.url : null;
+        if (transcodedUrl && transcodedUrl.charAt(0) === '/') {
+          transcodedUrl = getBackendOrigin() + transcodedUrl;
+        }
+        done(transcodedUrl);
       })
       .catch(function (error) {
         console.warn('[VideoEngine] No se pudo iniciar la transcodificacion:', error);
