@@ -1,6 +1,6 @@
 /**
  * Per-provider session storage. Each provider keeps its own session/cache
- * so logging into "fiberplus" never affects "onedxd" or any future
+ * so logging into one provider never affects another provider or any future
  * provider that also requires auth.
  */
 var AuthService = (function () {

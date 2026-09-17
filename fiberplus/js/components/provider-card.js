@@ -1,16 +1,13 @@
-/** Brand mark shared by the login screen's provider avatar. */
+/** Provider mark shared by the login screen's avatar. */
 var ProviderCard = (function () {
   function logoFor(provider) {
-    if (provider.logo) {
-      return (
-        '<img src="' +
-        Utils.escapeAttr(provider.logo) +
-        '" alt="' +
-        Utils.escapeAttr(provider.name) +
-        '" />'
-      );
-    }
-    return Icons.brandOneDxd();
+    return provider.logo
+      ? '<img src="' +
+          Utils.escapeAttr(provider.logo) +
+          '" alt="' +
+          Utils.escapeAttr(provider.name) +
+          '" />'
+      : '';
   }
 
   return { logoFor: logoFor };

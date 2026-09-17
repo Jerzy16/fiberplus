@@ -1,6 +1,5 @@
 /**
- * Credential gate for providers with requiresAuth=true (fiberplus).
- * One DxD skips this entirely since it's free.
+ * Credential gate for providers with requiresAuth=true.
  */
 var LoginPage = (function () {
   function render(providerId) {

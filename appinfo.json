@@ -1,0 +1,11 @@
+{
+  "id": "com.fiberplus.tv",
+  "version": "1.0.0",
+  "vendor": "Fiberplus",
+  "type": "web",
+  "main": "index.html",
+  "title": "Fiberplus",
+  "icon": "icon.svg",
+  "largeIcon": "largeIcon.svg",
+  "resolution": "1920x1080"
+}

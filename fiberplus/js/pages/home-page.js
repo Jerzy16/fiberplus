@@ -83,8 +83,7 @@ var HomePage = (function () {
       '<div class="stage-page" id="home-page-body">' +
       '<video class="stage-video" id="stage-video" muted autoplay loop playsinline></video>' +
       '<div class="stage-scrim"></div>' +
-      // Only providers behind a login have a session to end; one DxD is free,
-      // so the control would do nothing there.
+      // Only authenticated providers have a session to end.
       (provider.requiresAuth
         ? '<button class="icon-btn corner-btn corner-btn-right" onclick="App.logout(\'' +
           Utils.escapeAttr(provider.id) +
