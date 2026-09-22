@@ -263,7 +263,19 @@ function serveStatic(response, pathname) {
 			'.js': 'text/javascript; charset=utf-8',
 			'.css': 'text/css; charset=utf-8',
 			'.png': 'image/png',
-			'.mp4': 'video/mp4'
+			'.mp4': 'video/mp4',
+			'.jpeg': 'image/jpeg',
+			'.jpg': 'image/jpeg',
+		    '.svg': 'image/svg+xml',
+			'.json': 'application/json; charset=utf-8',
+			'.ico': 'image/x-icon',
+			'.m3u8': 'application/vnd.apple.mpegurl',
+			'.ts': 'video/mp2t',
+			'.mp3': 'audio/mpeg',
+			'.wav': 'audio/wav',
+			'.webm': 'video/webm',
+			'.ogg': 'audio/ogg',
+			'.txt': 'text/plain; charset=utf-8'
 		};
 		response.writeHead(200, {
 			'Content-Type': contentTypes[path.extname(filePath).toLowerCase()] || 'application/octet-stream'
