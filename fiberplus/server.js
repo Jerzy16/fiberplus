@@ -152,12 +152,15 @@ function startTranscode(source) {
 		'-profile:v', 'main', '-pix_fmt', 'yuv420p', '-b:v', '3500k',
 		'-maxrate', '4000k', '-bufsize', '8000k', '-r', '30', '-g', '60',
 		'-keyint_min', '60', '-sc_threshold', '0',
-		'-c:a', 'libmp3lame', '-b:a', '128k', '-ar', '44100', '-ac', '2',
-		'-af', 'aresample=async=1:first_pts=0',
+		'-bsf:v', 'h264_mp4toannexb', // <--- IMPORTANTE: Garantiza compatibilidad de flujo NAL/H.264 para TVs
+	//	'-c:a', 'libmp3lame', '-b:a', '128k', '-ar', '44100', '-ac', '2',
+	    '-c:a', 'aac', '-b:a', '128k', '-ar', '44100', '-ac', '2',
+	    '-af', 'aresample=async=1:first_pts=0',
+		'-muxdelay', '0', // <--- Forzado de sincronización inmediata audio/video
 		'-fflags', '+genpts', '-avoid_negative_ts', 'make_zero',
 		'-f', 'hls', '-hls_segment_type', 'mpegts',
 		'-hls_time', '2', '-hls_list_size', '12', '-hls_delete_threshold', '3',
-		'-hls_flags', 'delete_segments+independent_segments',
+		'-hls_flags', 'delete_segments+independent_segments+program_date_time', // <--- Metadatos para Smart TVs
 		'-hls_segment_filename', segmentPattern, playlist
 	];
 	const child = spawn(FFMPEG, args, {

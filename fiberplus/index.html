@@ -27,6 +27,9 @@
       window.__IPTV_BACKEND_ORIGIN__ = backendOrigin || window.location.origin;
       window.__IPTV_PROXY_URL__ = backendOrigin + '/api/proxy?url=';
       window.__IPTV_TRANSCODER_URL__ = backendOrigin + '/api/transcode?url=';
+      window.__IPTV_BACKEND_ORIGIN__ = window.location.origin;
+      window.__IPTV_TRANSCODER_URL__ = window.location.origin + '/api/transcode?url=';
+      window.__IPTV_PROXY_URL__ = window.location.origin + '/api/proxy?url=';
     }
   </script>
 

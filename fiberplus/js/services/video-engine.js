@@ -172,7 +172,8 @@ var VideoEngine = (function () {
     // actual codec problem behind a generic playback error.
     var canUseNativeFallback = isWebOS() || !window.Hls || !Hls.isSupported();
 
-    if (isHls && !isWebOS() && window.Hls && Hls.isSupported()) {
+    //if (isHls && !isWebOS() && window.Hls && Hls.isSupported()) {
+      if (isHls && window.Hls && Hls.isSupported()) {
       hlsInstance = new Hls({
         enableWorker: true,
         lowLatencyMode: false,
@@ -361,10 +362,31 @@ var VideoEngine = (function () {
   function togglePlay() {
     if (!videoElement) return;
     if (videoElement.paused) {
+      resumeLivePosition();
       videoElement.play().catch(function () {});
     } else {
       videoElement.pause();
     }
+  }
+
+  function resumeLivePosition() {
+    if (!videoElement) return;
+
+    // A live channel must resume at the current edge, not at the old buffer
+    // position where the user paused it.
+    if (
+      hlsInstance &&
+      typeof hlsInstance.liveSyncPosition === 'number' &&
+      isFinite(hlsInstance.liveSyncPosition) &&
+      hlsInstance.liveSyncPosition >= 0
+    ) {
+      videoElement.currentTime = hlsInstance.liveSyncPosition;
+      return;
+    }
+
+    if (!videoElement.seekable || !videoElement.seekable.length) return;
+    var liveEdge = videoElement.seekable.end(videoElement.seekable.length - 1);
+    if (isFinite(liveEdge)) videoElement.currentTime = liveEdge;
   }
 
   function toggleMute() {
