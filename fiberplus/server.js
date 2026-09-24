@@ -19,6 +19,7 @@ const sessions = new Map();
 const sessionsBySource = new Map();
 const MAX_TRANSCODERS = 2;
 const SESSION_IDLE_MS = 90 * 1000;
+module.exports = app;
 
 fs.mkdirSync(HLS_ROOT, { recursive: true });
 for (const entry of fs.readdirSync(HLS_ROOT, { withFileTypes: true })) {
